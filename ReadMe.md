@@ -7,7 +7,7 @@
 
  The code is modular it consists of two layers application layer and interfacing layer.
 
- Buld the Project Through your bash terminal using this command --> make -f makefile.mk
+ Build the Project Through your bash terminal using this command --> make -f makefile.mk
 
 
 
