@@ -1,23 +1,13 @@
-/**************************************************************
- * Module: UART
+/*
+ * UART.h
  *
- * File Name: uart.h
- *
- * Description: header file for the UART AVR driver
- *
- ****************************************************************/ 
+ * Created: 10/16/2020 2:25:38 AM
+ *  Author: Laptop-Academy.com
+ */ 
 
 
 #ifndef UART_H_
 #define UART_H_
-
-#include "DIO_CFG.h"
-#include"micro_config.h"
-#include <avr/io.h>
-
-/*******************************************************************************
- *                      Preprocessor Macros                                    *
- *******************************************************************************/
 
 #define UDR_reg  (*((volatile uint8*)(0x2c)))
 #define UCSRA_reg  (*((volatile uint8*)(0x2b)))
@@ -25,6 +15,9 @@
 #define UCSRC_reg  (*((volatile uint8*)(0x40)))
 #define UBRRH_reg  (*((volatile uint8*)(0x40)))
 #define UBRRL_reg  (*((volatile uint8*)(0x29)))
+
+
+#include "DIO_CFG.h"
 
 #define F_CPU 16000000UL
 #define BaudRate 9600UL
@@ -35,11 +28,10 @@
 //#define  MyUBRR ((F_CPU/(8*BaudRate))-1)
 //#endif
 
-
-/***************************Functions Prototypes**********************************/
 void UART_Init(void);
 void UART_Send(uint8);
 uint8 UART_Receive(void);
+void UART_Send_array(char *arr);
 
 
 

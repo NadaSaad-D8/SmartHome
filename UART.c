@@ -1,14 +1,12 @@
-/**************************************************************
- * Module: UART
+/*
+ * UART.c
  *
- * File Name: uart.c
- *
- * Description: Source file for the UART AVR driver
- *
- ****************************************************************/ 
+ * Created: 10/16/2020 2:25:51 AM
+ *  Author: Laptop-Academy.com
+ */ 
 
 #include "UART.h"
-
+#include <avr/io.h>
 void UART_Init(void){
 	UCSRB_reg |= (1<<RXEN)|(1<<TXEN);
 	UCSRC |= (1<<URSEL)|(1<<UCSZ0)|(1<<UCSZ1);
@@ -26,3 +24,11 @@ uint8 UART_Receive(void){
 	while(!GetBit(UCSRA_reg,7));
 	return UDR_reg;
 }
+
+void UART_Send_array(char *arr){
+	int i =-1;
+	while (arr[++i] != '\0') {
+		UART_Send(arr[i]);
+	}
+}
+
