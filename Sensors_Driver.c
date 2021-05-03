@@ -1,9 +1,9 @@
-/*
+/*/*
  * Sensors_Driver.c
  *
  *  Created on: May 2, 2021
  *      Author: Hazem Shalaby
- */
+ 
 
 #include "Sensors.h"
 #include "DIO_CFG.h"
@@ -64,4 +64,4 @@ void GasAndFlame_voidInit(void)
 //	{
 //		ClrBit(PORTA_reg,3);
 //	}
-//}
+//}*/
