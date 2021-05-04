@@ -99,16 +99,22 @@ ISR(TIMER0_OVF_vect){
 	}
 	
 	if(allow1 == hour/3 && check_button1==1){
-		UART_Send_array("Med 1 Time");
+		UART_Send_array("Med 1 Time  ");
+		if (!(alert_gas || alert_flame))
+		{
 		LCD_SetPos(1,0);
 		LCD_Print("               ");
+		}
 		check_button1=0;
 	}
 	
 	if(allow2 == hour/3 && check_button2==1){
-		UART_Send_array("Med 2 Time");
-		LCD_SetPos(2,0);
-		LCD_Print("               ");
+		UART_Send_array("Med 2 Time  ");
+		if (!(alert_gas || alert_flame))
+		{
+			LCD_SetPos(2,0);
+			LCD_Print("               ");
+		}
 		check_button2=0;
 	}
 	return;
@@ -170,35 +176,40 @@ void GasAndFlame_voidDangerAlert(void)
 	{
 		DIO_Write(GasSensorPinAction,STD_High);
 		if(!alert_gas){
-			LCD_Init();
-			LCD_Print("gas Leakage!!");
-			UART_Send_array("gas Leakage!!");
+			LCD_SetPos(1,0);
+			LCD_Print("Gas Leakage!!  ");
+			UART_Send_array("gas Leakage!!  ");
 		}
 		alert_gas = 1;
 	}
 	else
 	{
 		DIO_Write(GasSensorPinAction,STD_Low);
+		if(alert_gas){
+			LCD_SetPos(1,0);
+			LCD_Print("             ");
+		}
 		alert_gas = 0;
-		LCD_Init();
 	}
 
 	if(DIO_Read(FlameSensorPinRead))
 	{
 		DIO_Write(FlameSensorPinAction,STD_High);
 		if(!alert_flame){
-			LCD_Init();
 			LCD_SetPos(2,0);
-			LCD_Print("Fire!!");
-			UART_Send_array("Fire!!");
+			LCD_Print("Fire!!         ");
+			UART_Send_array("Fire!!  ");
 		}
 		alert_flame = 1;
 	}
 	else
 	{
 		DIO_Write(FlameSensorPinAction,STD_Low);
+		if(alert_flame){
+			LCD_SetPos(2,0);
+			LCD_Print("      ");
+		}
 		alert_flame = 0;
-		LCD_Init();
 	}
 }
 
