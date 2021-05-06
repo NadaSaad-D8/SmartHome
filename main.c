@@ -15,25 +15,27 @@
 #include "Sensors.h"
 #include <avr/interrupt.h>
 
-void GasAndFlame_voidInit(void);
 void GasAndFlame_voidDangerAlert(void);
+
+enum checks{
+	check1=0,
+	check2,
+	check_button1,
+	check_button2,
+	alert_gas,
+	alert_flame
+	};
 
 #define  hour 3662 //one minute
 volatile uint16 ovf_Count1 =0;
 volatile uint16 ovf_Count2 =0;
 volatile  uint8 med1 = 1;
 volatile  uint8 med2 = 3;
-volatile  uint8 check1 = 0;
-volatile  uint8 check2 = 0;
 volatile  uint16 allow1 = 0;
 volatile  uint16 allow2 = 0;
-volatile  uint8 check_button1 = 0;
-volatile  uint8 check_button2 = 0;
 volatile char keypad_in1 ;
 volatile char keypad_in2[2] ;
-volatile uint8 alert_gas = 0;
-volatile uint8 alert_flame = 0;
-
+volatile uint8 checks_var =0;
 
 
 int main(void)
@@ -47,7 +49,6 @@ int main(void)
 	//
 	LCD_Init();
 	KeyPad_Init();
-	GasAndFlame_voidInit();
 	
 	GICR = 1<<INT0 ;		/* Enable INT0*/
 	MCUCR = 1<<ISC01 | 1<<ISC00;  /* Trigger INT0 on rising edge */
@@ -58,17 +59,17 @@ int main(void)
 	while (1)
 	{
 		
-		if (check1 && !(alert_gas || alert_flame))
+		if (GetBit(checks_var,check1) && !(GetBit(checks_var,alert_gas) || GetBit(checks_var,alert_flame)))
 		{
 			LCD_SetPos(1,0);
 			LCD_Print("1st Med. Time");
-			check1 = 0;
+			ClrBit(checks_var,check1);
 		}
-		if (check2 && !(alert_gas || alert_flame))
+		if (GetBit(checks_var,check2) && !(GetBit(checks_var,alert_gas) || GetBit(checks_var,alert_flame)))
 		{
 			LCD_SetPos(2,0);
 			LCD_Print("2nd Med. Time");
-			check2 = 0;
+			ClrBit(checks_var,check2);
 		}
 		
 		GasAndFlame_voidDangerAlert();
@@ -84,38 +85,38 @@ ISR(TIMER0_OVF_vect){
 	
 	if (ovf_Count1 == hour * med1){
 		
-		check1 = 1;
+		SetBit(checks_var,check1);
 		ovf_Count1 = 0;
-		check_button1 =1;
+		SetBit(checks_var,check_button1);
 		allow1 =0;
 	}
 	
 	if (ovf_Count2 == hour*med2){
 		
-		check2 = 1;
+		SetBit(checks_var,check2);
 		ovf_Count2 = 0;
-		check_button2 =1;
+		SetBit(checks_var,check_button2);
 		allow2 =0;
 	}
 	
-	if(allow1 == hour/3 && check_button1==1){
+	if(allow1 == hour/3 && GetBit(checks_var,check_button1)){
 		UART_Send_array("Med 1 Time  ");
-		if (!(alert_gas || alert_flame))
+		if (!(GetBit(checks_var,alert_gas) || GetBit(checks_var,alert_flame)))
 		{
 		LCD_SetPos(1,0);
 		LCD_Print("               ");
 		}
-		check_button1=0;
+		ClrBit(checks_var,check_button1);
 	}
 	
 	if(allow2 == hour/3 && check_button2==1){
 		UART_Send_array("Med 2 Time  ");
-		if (!(alert_gas || alert_flame))
+		if (!(GetBit(checks_var,alert_gas) || GetBit(checks_var,alert_flame)))
 		{
 			LCD_SetPos(2,0);
 			LCD_Print("               ");
 		}
-		check_button2=0;
+		ClrBit(checks_var,check_button2);
 	}
 	return;
 }
@@ -165,8 +166,8 @@ ISR(INT0_vect)
 
 ISR(INT1_vect)
 {
-	check_button1 = 0;
-	check_button2 = 0;
+	ClrBit(checks_var,check_button1);
+	ClrBit(checks_var,check_button2);
 	LCD_Init();
 }
 
@@ -175,53 +176,41 @@ void GasAndFlame_voidDangerAlert(void)
 	if(!DIO_Read(GasSensorPinRead))
 	{
 		DIO_Write(GasSensorPinAction,STD_High);
-		if(!alert_gas){
+		if(!GetBit(checks_var,alert_gas)){
 			LCD_SetPos(1,0);
 			LCD_Print("Gas Leakage!!  ");
 			UART_Send_array("gas Leakage!!  ");
 		}
-		alert_gas = 1;
+		SetBit(checks_var,alert_gas);
 	}
 	else
 	{
 		DIO_Write(GasSensorPinAction,STD_Low);
-		if(alert_gas){
+		if(GetBit(checks_var,alert_gas)){
 			LCD_SetPos(1,0);
 			LCD_Print("             ");
 		}
-		alert_gas = 0;
+		ClrBit(checks_var,alert_gas);
 	}
 
 	if(DIO_Read(FlameSensorPinRead))
 	{
 		DIO_Write(FlameSensorPinAction,STD_High);
-		if(!alert_flame){
+		if(!GetBit(checks_var,alert_flame)){
 			LCD_SetPos(2,0);
 			LCD_Print("Fire!!         ");
 			UART_Send_array("Fire!!  ");
 		}
-		alert_flame = 1;
+		SetBit(checks_var,alert_flame);
 	}
 	else
 	{
 		DIO_Write(FlameSensorPinAction,STD_Low);
-		if(alert_flame){
+		if(GetBit(checks_var,alert_flame)){
 			LCD_SetPos(2,0);
 			LCD_Print("      ");
 		}
-		alert_flame = 0;
+		ClrBit(checks_var,alert_flame);
 	}
 }
 
-void GasAndFlame_voidInit(void)
-{
-	ClrBit(DDRA_reg,0);
-	ClrBit(DDRA_reg,1);
-
-	SetBit(PORTA_reg,0);
-	SetBit(PORTA_reg,1);
-
-	SetBit(DDRA_reg,2);
-	SetBit(DDRA_reg,3);
-
-}
