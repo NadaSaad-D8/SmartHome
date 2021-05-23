@@ -29,7 +29,7 @@ const PIN_CFG ChannelsInit[] = {
 	{Output,STD_Low},
 				
 	//portC		
-	{Output,STD_Low},
+	{Input,STD_High},
 	{Output,STD_Low},
 	{Output,STD_Low},
 	{Output,STD_Low},

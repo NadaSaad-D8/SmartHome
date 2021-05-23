@@ -7,6 +7,7 @@
 
 #define F_CPU 16000000UL
 
+#include "micro_config.h"
 #include <util/delay.h>
 #include "UART.h"
 #include "LCD.h"
@@ -36,6 +37,7 @@ volatile  uint16 allow2 = 0;
 volatile char keypad_in1 ;
 volatile char keypad_in2[2] ;
 volatile uint8 checks_var =0;
+volatile uint8 F=3000;
 
 
 int main(void)
@@ -58,7 +60,12 @@ int main(void)
 	
 	while (1)
 	{
-		
+		if(GetBit(PORTC,PC0) && (F==3000))
+		{
+          UART_Send_array(" Patient has moved out of the room");			
+           F=0;
+		}
+
 		if (GetBit(checks_var,check1) && !(GetBit(checks_var,alert_gas) || GetBit(checks_var,alert_flame)))
 		{
 			LCD_SetPos(1,0);
@@ -73,6 +80,7 @@ int main(void)
 		}
 		
 		GasAndFlame_voidDangerAlert();
+		F++;
 		
 	}
 }
